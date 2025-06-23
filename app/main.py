@@ -43,6 +43,18 @@ def main():
             print(file_hash)
         else:
             raise RuntimeError(f"Unknown option: {sys.argv[2]}")
+    elif command == "ls-tree":
+        if sys.argv[2] == "--name-only":
+            tree_sha = sys.argv[3]
+            with open(f".git/objects/{tree_sha[:2]}/{tree_sha[2:]}", "rb") as f:
+                tree_obj = zlib.decompress(f.read())
+                _, tree_obj_data = tree_obj.split(b"\x00", maxsplit=1)
+
+                while tree_obj_data:
+                    mode_name, tree_obj_data = tree_obj_data.split(b"\x00", maxsplit=1)
+                    mode, name = mode_name.split()
+                    print(name.decode())
+                    tree_obj_data = tree_obj_data[20:]
 
     else:
         raise RuntimeError(f"Unknown command #{command}")
