@@ -61,6 +61,18 @@ def write_tree(start_dir: str) -> hashlib._Hash:
     return tree_hash
 
 
+def create_commit_tree_body(
+    tree_hash: str, parent_hash: str, author: str, committer: str, message: str
+) -> str:
+    body = f"tree {tree_hash}\n"
+    if parent_hash:
+        body += f"parent {parent_hash}\n"
+    body += f"author: {author}\n"
+    body += f"committer: {committer}\n\n"
+    body += message + "\n"
+    return body
+
+
 def main():
     # You can use print statements as follows for debugging, they'll be visible when running tests.
     print("Logs from your program will appear here!", file=sys.stderr)
@@ -105,6 +117,25 @@ def main():
         start_dir = "."
         tree_hash = write_tree(start_dir)
         print(tree_hash.hexdigest())
+    elif command == "commit-tree":
+        tree_hash = sys.argv[2]
+        parent_hash = ""
+        if sys.argv[3] == "-p":
+            parent_hash = sys.argv[4]
+            message = sys.argv[6]
+        else:
+            message = sys.argv[4]
+        author = "code4days <code4days@code4days.com>"
+
+        body = create_commit_tree_body(
+            tree_hash=tree_hash,
+            parent_hash=parent_hash,
+            author=author,
+            committer=author,
+            message=message,
+        )
+        commit_hash = create_hash(body.encode(), "commit")
+        print(commit_hash.hexdigest())
 
     else:
         raise RuntimeError(f"Unknown command #{command}")
